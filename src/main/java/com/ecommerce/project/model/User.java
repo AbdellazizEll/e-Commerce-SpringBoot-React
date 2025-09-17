@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -58,6 +59,7 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE},
     orphanRemoval = true)
     private Set<Product> products = new HashSet<>();
@@ -67,6 +69,11 @@ public class User {
                 joinColumns = @JoinColumn(name="user_id"),
                 inverseJoinColumns = @JoinColumn(name="adress_id"))
     private List<Address> adresses = new ArrayList<>();
+
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE} , orphanRemoval = true)
+    private Cart cart;
 
 
 }
