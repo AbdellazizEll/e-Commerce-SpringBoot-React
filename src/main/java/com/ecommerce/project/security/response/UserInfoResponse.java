@@ -8,12 +8,14 @@ public class UserInfoResponse {
     private Long id;
     private String jwtToken;
     private String username;
+    private String email;
     private List<String> roles;
 
-    public UserInfoResponse(Long id, String username, List<String> roles, String jwtToken) {
+    public UserInfoResponse(Long id, String username, List<String> roles, String email) {
         this.id = id;
         this.username = username;
         this.roles = roles;
+        this.email = email;
         this.jwtToken = jwtToken;
     }
 
@@ -53,5 +55,13 @@ public class UserInfoResponse {
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

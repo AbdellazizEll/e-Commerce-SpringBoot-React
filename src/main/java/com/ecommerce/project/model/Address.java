@@ -44,10 +44,10 @@ public class Address {
     @Size(min = 6, message = "Pincode name must be at least 2 characters")
     private String pincode;
 
-    @ManyToMany(mappedBy = "adresses")
-    private List<User> user = new ArrayList<>();
+    @ManyToOne
+    private  User user;
 
-    public Address(String street, String buildingName, String state, String country, String pincode, List<User> user) {
+    public Address(String street, String buildingName, String state, String country, String pincode, User user) {
         this.street = street;
         this.buildingName = buildingName;
         this.state = state;

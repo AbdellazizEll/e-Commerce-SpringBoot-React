@@ -34,31 +34,33 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    private final    UserDetailsServiceImpl userDetailsService;
-    private  final AuthEntryPointJwt unauthorizedHandler;
+    @Autowired
+    UserDetailsServiceImpl userDetailsService;
 
+    @Autowired
+    private AuthEntryPointJwt unauthorizedHandler;
 
-    private final AuthTokenFilter authTokenFilter;      // <-- injected bean
+    @Bean
+    public AuthTokenFilter authenticationJwtTokenFilter() {
+        return new AuthTokenFilter();
+    }
 
 
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
 
-        return daoAuthenticationProvider;
-
+        return authProvider;
     }
+
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-
-        return authenticationConfiguration.getAuthenticationManager();
-
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -66,10 +68,10 @@ public class WebSecurityConfig {
     }
 
 
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
@@ -84,9 +86,9 @@ public class WebSecurityConfig {
                                 .anyRequest().authenticated()
                 );
 
-        http.authenticationProvider(daoAuthenticationProvider());
+        http.authenticationProvider(authenticationProvider());
 
-        http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         http.headers(headers -> headers.frameOptions(
                 frameOptions -> frameOptions.sameOrigin()));
 
@@ -103,30 +105,31 @@ public class WebSecurityConfig {
                 "/webjars/**"));
     }
 
+
     @Bean
     public CommandLineRunner initData(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             // Retrieve or create roles
-            com.ecommerce.project.model.Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
+            Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
                     .orElseGet(() -> {
-                        com.ecommerce.project.model.Role newUserRole = new com.ecommerce.project.model.Role(AppRole.ROLE_USER);
+                        Role newUserRole = new Role(AppRole.ROLE_USER);
                         return roleRepository.save(newUserRole);
                     });
 
-            com.ecommerce.project.model.Role sellerRole = roleRepository.findByRoleName(AppRole.ROLE_SELLER)
+            Role sellerRole = roleRepository.findByRoleName(AppRole.ROLE_SELLER)
                     .orElseGet(() -> {
-                        com.ecommerce.project.model.Role newSellerRole = new com.ecommerce.project.model.Role(AppRole.ROLE_SELLER);
+                        Role newSellerRole = new Role(AppRole.ROLE_SELLER);
                         return roleRepository.save(newSellerRole);
                     });
 
-            com.ecommerce.project.model.Role adminRole = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
+            Role adminRole = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
                     .orElseGet(() -> {
-                        com.ecommerce.project.model.Role newAdminRole = new com.ecommerce.project.model.Role(AppRole.ROLE_ADMIN);
+                        Role newAdminRole = new Role(AppRole.ROLE_ADMIN);
                         return roleRepository.save(newAdminRole);
                     });
 
-            Set<com.ecommerce.project.model.Role> userRoles = Set.of(userRole);
-            Set<com.ecommerce.project.model.Role> sellerRoles = Set.of(sellerRole);
+            Set<Role> userRoles = Set.of(userRole);
+            Set<Role> sellerRoles = Set.of(sellerRole);
             Set<Role> adminRoles = Set.of(userRole, sellerRole, adminRole);
 
 

@@ -64,10 +64,10 @@ public class User {
     orphanRemoval = true)
     private Set<Product> products = new HashSet<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE})
-    @JoinTable(name="user_adress",
-                joinColumns = @JoinColumn(name="user_id"),
-                inverseJoinColumns = @JoinColumn(name="adress_id"))
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST,CascadeType.MERGE})
+//    @JoinTable(name="user_adress",
+//                joinColumns = @JoinColumn(name="user_id"),
+//                inverseJoinColumns = @JoinColumn(name="adress_id"))
     private List<Address> adresses = new ArrayList<>();
 
 
